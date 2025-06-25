@@ -1,9 +1,9 @@
 ---
 name: Promote branch
-on: 
+on:
   workflow_dispatch:
     inputs:
-      promotion-type0:
+      promotion-type:
         description: The type of promotion to perform
         type: choice
         required: true
@@ -36,8 +36,8 @@ permissions:
   contents: write
   actions: write
 jobs:
-  promote-branch:
-    name: Promote Branch
+  promote-staging-to-production:
+    name: Promote Staging to Production
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -53,10 +53,10 @@ jobs:
           DRY: ${{ inputs.dry-run || false }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   promote-development-to-staging:
-    name: Promote Branch 2
+    name: Promote Development to Staging
     runs-on: ubuntu-latest
     if: inputs.promotion-type == ''
-    needs: promote-branch
+    needs: promote-staging-to-production
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

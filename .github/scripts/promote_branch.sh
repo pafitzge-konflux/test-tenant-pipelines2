@@ -4,14 +4,14 @@
 #
 # The script promotes the development content into the staging branch, or the staging
 # content into the production branch. It starts by performing the following checks, then
-# it performs a git push. There is no pull request.
+# it performs a git force push. There is no pull request.
 #
 # Checks:
 #   - If there is content in the staging branch that is not yet in the production branch, the
 #     script will not git push to add more content to the staging branch. This can be overridden with
 #     --force-to-staging true
 #   - If promoting to production and the content has not been in the staging branch for at least 7 days,
-#     the script will exit without doing a push. Content is expected to sit in staging for at least a week
+#     the script will exit without doing a push. Content is expected to sit in staging for at least six days
 #     to provide sufficient testing time. This can be overridden with --override true
 #
 # Prerequisities:
@@ -58,6 +58,7 @@ done
 cleanup() {
   if [ -d "${1}" ]; then
     echo "Deleting tmpDir..."
+    cd -
     rm -rf "${1:?}"
   fi
 }
@@ -70,7 +71,7 @@ print_help() {
     echo "  --force-to-staging: If passed with value true, allow promotion to staging even"
     echo "                      if staging and production differ."
     echo "  --override:         If passed with value true, allow promotion to production"
-    echo "                      even if the change has not been in staging for one week."
+    echo "                      even if the change has not been in staging for six days."
     echo "  --dry-run:          If passed with value true, print out the changes that would"
     echo "                      be promoted but do not git push or delete the temp repo."
     echo
@@ -86,11 +87,11 @@ check_if_branch_differs() {
     fi
 }
 
-check_if_any_commits_in_last_week() {
+check_if_any_commits_in_last_six_days() {
     NEW_COMMITS=$(git log --oneline --since="$(date --date="6 days ago" +%Y-%m-%d)" | wc -l)
     if [ "$NEW_COMMITS" -ne 0 ] ; then
-        echo "There are commits in staging that are less than a week old. Blocking promotion to production"
-        echo "Commits less than a week old: $(git log --oneline --since="$(date --date="6 days ago" +%Y-%m-%d)")"
+        echo "There are commits in staging that are less than six days old. Blocking promotion to production"
+        echo "Commits less than six days old: $(git log --oneline --since="$(date --date="6 days ago" +%Y-%m-%d)")"
         exit 1
     fi
 }
@@ -131,10 +132,10 @@ echo -e "---\nPromoting community-catalog ${SOURCE_BRANCH} to ${TARGET_BRANCH}\n
 git clone "https://oauth2:$GITHUB_TOKEN@github.com/$ORG/$REPO.git" "${communityCatalogDir}"
 cd "${communityCatalogDir}"
 
-# A change cannot go into production if the changes in staging are less than a week old
+# A change cannot go into production if the changes in staging are less than six days old
 if [[ "${TARGET_BRANCH}" == "production" && "${OVERRIDE}" != "true" ]] ; then
     git checkout origin/staging
-    check_if_any_commits_in_last_week
+    check_if_any_commits_in_last_six_days
 fi
 
 # A change cannot go into staging if staging and production differ
