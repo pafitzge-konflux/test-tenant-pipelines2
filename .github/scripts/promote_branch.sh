@@ -20,8 +20,8 @@
 set -e
 
 # GitHub repository details
-ORG="Paul123111"
-REPO="test-tenant-pipelines"
+ORG="pafitzge-konflux"
+REPO="test-tenant-pipelines2"
 
 OPTIONS=$(getopt --long "promotion-type:,force-to-staging:,override:,dry-run:,help" -o "p:,h" -- "$@")
 eval set -- "$OPTIONS"

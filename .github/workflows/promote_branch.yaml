@@ -30,8 +30,8 @@ on:
         type: boolean
         required: true
         default: false
-  #schedule:
-    #- cron: "*/5 * * * *"
+  schedule:
+    - cron: "*/5 * * * *"
 permissions:
   contents: write
   actions: write
